@@ -18,7 +18,7 @@ public:
                            bool shouldDrawButtonAsHighlighted,
                            bool shouldDrawButtonAsDown) override;
 
-    static const juce::Colour background, panel, panelLight, cream, brass, accent;
+    static const juce::Colour background, panel, panelLight, cream, brass, accent, ink;
 };
 
 //==============================================================================
@@ -79,7 +79,9 @@ private:
 
     juce::MidiKeyboardComponent keyboard;
 
-    juce::Rectangle<int> leverPanel, oscPanel, filterPanel, envPanel, modPanel, outPanel;
+    // The cabinet artwork. All control positions are expressed in its native
+    // 1560 x 1008 pixel space and scaled to the editor bounds.
+    juce::Image backgroundImage;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OndaireAudioProcessorEditor)
 };

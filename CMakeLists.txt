@@ -42,6 +42,12 @@ target_sources(Ondaire PRIVATE
     Source/PluginEditor.cpp
 )
 
+juce_add_binary_data(OndaireAssets
+    HEADER_NAME OndaireAssets.h
+    NAMESPACE OndaireAssets
+    SOURCES Assets/background.png
+)
+
 target_compile_definitions(Ondaire PUBLIC
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0
@@ -50,6 +56,7 @@ target_compile_definitions(Ondaire PUBLIC
 
 target_link_libraries(Ondaire
     PRIVATE
+        OndaireAssets
         juce::juce_audio_utils
     PUBLIC
         juce::juce_recommended_config_flags

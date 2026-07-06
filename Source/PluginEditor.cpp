@@ -1,5 +1,6 @@
 #include "PluginEditor.h"
 #include "OndairePresets.h"
+#include "OndaireAssets.h"
 
 namespace p = ondaire::param;
 
@@ -10,13 +11,16 @@ const juce::Colour OndaireLookAndFeel::panelLight { 0xff322a20 };
 const juce::Colour OndaireLookAndFeel::cream      { 0xffe8ddc4 };
 const juce::Colour OndaireLookAndFeel::brass      { 0xffc8a04b };
 const juce::Colour OndaireLookAndFeel::accent     { 0xffb5502e };
+const juce::Colour OndaireLookAndFeel::ink        { 0xff33261a };
 
 OndaireLookAndFeel::OndaireLookAndFeel()
 {
     setColour (juce::ResizableWindow::backgroundColourId, background);
-    setColour (juce::Slider::textBoxTextColourId, cream.withAlpha (0.8f));
+    setColour (juce::Slider::textBoxTextColourId, ink.withAlpha (0.85f));
     setColour (juce::Slider::textBoxOutlineColourId, juce::Colours::transparentBlack);
-    setColour (juce::Label::textColourId, cream);
+    setColour (juce::Slider::textBoxBackgroundColourId, juce::Colours::transparentBlack);
+    setColour (juce::Slider::textBoxHighlightColourId, brass.withAlpha (0.4f));
+    setColour (juce::Label::textColourId, ink);
     setColour (juce::ComboBox::backgroundColourId, panelLight);
     setColour (juce::ComboBox::textColourId, cream);
     setColour (juce::ComboBox::outlineColourId, brass.withAlpha (0.4f));
@@ -104,7 +108,7 @@ void OndaireLookAndFeel::drawToggleButton (juce::Graphics& g, juce::ToggleButton
     g.setColour (juce::Colour (0xff0e0b08));
     g.drawRoundedRectangle (handle, 4.0f, 1.0f);
 
-    g.setColour (on ? brass : cream.withAlpha (0.75f));
+    g.setColour (on ? brass.darker (0.35f) : ink.withAlpha (0.8f));
     g.setFont (juce::Font (juce::FontOptions (12.0f, juce::Font::bold)));
     g.drawText (b.getButtonText(), labelArea, juce::Justification::centred);
 }
@@ -173,9 +177,19 @@ OndaireAudioProcessorEditor::OndaireAudioProcessorEditor (OndaireAudioProcessor&
     keyboard.setOctaveForMiddleC (4);
     addAndMakeVisible (keyboard);
 
+    backgroundImage = juce::ImageCache::getFromMemory (OndaireAssets::background_png,
+                                                       OndaireAssets::background_pngSize);
+
+    // The artwork bakes in the knob labels of the four lower panels; hide the
+    // corresponding component labels so they are not drawn twice.
+    for (auto* k : { &cutoff, &resonance, &attack, &decay, &sustain, &release,
+                     &vibRate, &vibDepth, &tremRate, &tremDepth,
+                     &glide, &pbRange, &expression, &gain })
+        k->label.setVisible (false);
+
     processor.addListener (this);
 
-    setSize (1080, 660);
+    setSize (1170, 756);   // 3/4 of the artwork's native 1560 x 1008
 }
 
 OndaireAudioProcessorEditor::~OndaireAudioProcessorEditor()
@@ -210,13 +224,16 @@ void OndaireAudioProcessorEditor::audioProcessorChanged (juce::AudioProcessor*,
 void OndaireAudioProcessorEditor::addKnob (Knob& k, const char* paramID, const juce::String& text)
 {
     k.slider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
-    k.slider.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 64, 14);
+    k.slider.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 64, 15);
+    k.slider.setColour (juce::Slider::textBoxTextColourId, OndaireLookAndFeel::ink);
+    k.slider.setColour (juce::Slider::textBoxOutlineColourId, juce::Colours::transparentBlack);
+    k.slider.setColour (juce::Slider::textBoxBackgroundColourId, juce::Colours::transparentBlack);
     addAndMakeVisible (k.slider);
 
     k.label.setText (text, juce::dontSendNotification);
     k.label.setJustificationType (juce::Justification::centred);
-    k.label.setFont (juce::Font (juce::FontOptions (12.0f)));
-    k.label.setColour (juce::Label::textColourId, OndaireLookAndFeel::cream.withAlpha (0.85f));
+    k.label.setFont (juce::Font (juce::FontOptions (13.0f, juce::Font::bold)));
+    k.label.setColour (juce::Label::textColourId, OndaireLookAndFeel::ink);
     addAndMakeVisible (k.label);
 
     k.attachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
@@ -250,107 +267,65 @@ void OndaireAudioProcessorEditor::addCombo (juce::ComboBox& box,
 //==============================================================================
 void OndaireAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    g.fillAll (OndaireLookAndFeel::background);
-
-    auto drawSection = [&g] (juce::Rectangle<int> r, const juce::String& title)
-    {
-        if (r.isEmpty())
-            return;
-        auto rf = r.toFloat();
-        g.setColour (OndaireLookAndFeel::panel);
-        g.fillRoundedRectangle (rf, 8.0f);
-        g.setColour (OndaireLookAndFeel::brass.withAlpha (0.25f));
-        g.drawRoundedRectangle (rf.reduced (0.5f), 8.0f, 1.0f);
-        g.setColour (OndaireLookAndFeel::brass);
-        g.setFont (juce::Font (juce::FontOptions (12.0f, juce::Font::bold)));
-        g.drawText (title.toUpperCase(), r.reduced (12, 6).removeFromTop (16),
-                    juce::Justification::centredLeft);
-    };
-
-    drawSection (leverPanel,  "Timbre Levers");
-    drawSection (oscPanel,    "Oscillator & Register");
-    drawSection (filterPanel, "Filter");
-    drawSection (envPanel,    "Envelope");
-    drawSection (modPanel,    "Vibrato & Tremolo");
-    drawSection (outPanel,    "Voice & Output");
-
-    // Wordmark
-    auto header = getLocalBounds().removeFromTop (52).reduced (18, 6);
-    g.setColour (OndaireLookAndFeel::cream);
-    g.setFont (juce::Font (juce::FontOptions (30.0f, juce::Font::bold)));
-    g.drawText ("ONDAIRE", header, juce::Justification::centredLeft);
-    g.setColour (OndaireLookAndFeel::brass.withAlpha (0.8f));
-    g.setFont (juce::Font (juce::FontOptions (12.5f, juce::Font::italic)));
-    g.drawText ("an Ondioline-inspired electronic instrument",
-                header.withTrimmedLeft (170), juce::Justification::centredLeft);
+    if (backgroundImage.isValid())
+        g.drawImage (backgroundImage, getLocalBounds().toFloat());
+    else
+        g.fillAll (OndaireLookAndFeel::background);
 }
 
 void OndaireAudioProcessorEditor::resized()
 {
-    auto area = getLocalBounds();
-
-    auto header = area.removeFromTop (52).reduced (18, 12);
-    presetBox.setBounds (header.removeFromRight (240));
-
-    keyboard.setBounds (area.removeFromBottom (86).reduced (18, 8));
-    keyboard.setKeyWidth ((float) keyboard.getWidth() / 36.0f);
-
-    area.reduce (12, 4);
-    const int gap = 8;
-
-    // Top row: lever bank + oscillator section.
-    auto topRow = area.removeFromTop (juce::jmax (150, area.getHeight() * 38 / 100));
-    leverPanel = topRow.removeFromLeft (topRow.getWidth() * 58 / 100).reduced (gap / 2);
-    oscPanel   = topRow.reduced (gap / 2);
-
-    auto placeLevers = [this] (juce::Rectangle<int> r)
+    // Positions in the artwork's native 1560 x 1008 pixel space.
+    const float sx = (float) getWidth()  / 1560.0f;
+    const float sy = (float) getHeight() / 1008.0f;
+    auto art = [sx, sy] (float x, float y, float w, float h)
     {
-        r = r.reduced (12).withTrimmedTop (16);
+        return juce::Rectangle<float> (x * sx, y * sy, w * sx, h * sy).toNearestInt();
+    };
+
+    presetBox.setBounds (art (1160.0f, 48.0f, 340.0f, 42.0f));
+
+    // Timbre lever bank panel.
+    {
+        auto r = art (155.0f, 175.0f, 730.0f, 235.0f);
         const int w = r.getWidth() / numLevers;
         for (auto& l : levers)
             l.button.setBounds (r.removeFromLeft (w));
-    };
-    placeLevers (leverPanel);
+    }
 
-    // Expects a rectangle already trimmed of its section padding/title.
-    auto placeKnobs = [] (juce::Rectangle<int> r, std::initializer_list<Knob*> knobs)
+    auto placeKnobs = [] (juce::Rectangle<int> r, std::initializer_list<Knob*> knobs,
+                          bool withLabels)
     {
         const int w = r.getWidth() / (int) knobs.size();
         for (auto* k : knobs)
         {
             auto cell = r.removeFromLeft (w);
-            k->label.setBounds (cell.removeFromTop (16));
+            if (withLabels)
+                k->label.setBounds (cell.removeFromTop (20));
             k->slider.setBounds (cell);
         }
     };
 
-    {
-        auto r = oscPanel.reduced (12).withTrimmedTop (16);
-        auto comboRow = r.removeFromTop (26);
-        registerBox.setBounds (comboRow.removeFromLeft (juce::jmin (150, comboRow.getWidth())));
-        placeKnobs (r, { &tune, &topsWidth, &drive, &souffle, &percDecay });
-    }
+    // Oscillator & register panel (artwork panel is blank; we draw labels).
+    registerBox.setBounds (art (940.0f, 190.0f, 220.0f, 40.0f));
+    placeKnobs (art (930.0f, 245.0f, 545.0f, 175.0f),
+                { &tune, &topsWidth, &drive, &souffle, &percDecay }, true);
 
-    // Bottom row: filter / envelope / modulation / voice+output.
-    auto bottomRow = area.reduced (0, gap / 2);
-    const int colW = bottomRow.getWidth() / 4;
-    filterPanel = bottomRow.removeFromLeft (colW).reduced (gap / 2);
-    envPanel    = bottomRow.removeFromLeft (colW).reduced (gap / 2);
-    modPanel    = bottomRow.removeFromLeft (colW).reduced (gap / 2);
-    outPanel    = bottomRow.reduced (gap / 2);
+    // Lower panels: the artwork provides the knob labels at y ~578, so the
+    // sliders sit directly beneath them.
+    filterBox.setBounds (art (130.0f, 508.0f, 225.0f, 38.0f));
+    placeKnobs (art (100.0f, 595.0f, 280.0f, 200.0f), { &cutoff, &resonance }, false);
 
-    {
-        auto r = filterPanel.reduced (12).withTrimmedTop (16);
-        filterBox.setBounds (r.removeFromTop (26).reduced (4, 0));
-        placeKnobs (r, { &cutoff, &resonance });
-    }
-    placeKnobs (envPanel.reduced (12).withTrimmedTop (16),
-                { &attack, &decay, &sustain, &release });
-    placeKnobs (modPanel.reduced (12).withTrimmedTop (16),
-                { &vibRate, &vibDepth, &tremRate, &tremDepth });
-    {
-        auto r = outPanel.reduced (12).withTrimmedTop (16);
-        modeBox.setBounds (r.removeFromTop (26).reduced (4, 0));
-        placeKnobs (r, { &glide, &pbRange, &expression, &gain });
-    }
+    placeKnobs (art (408.0f, 595.0f, 345.0f, 200.0f),
+                { &attack, &decay, &sustain, &release }, false);
+
+    placeKnobs (art (784.0f, 595.0f, 315.0f, 200.0f),
+                { &vibRate, &vibDepth, &tremRate, &tremDepth }, false);
+
+    modeBox.setBounds (art (1145.0f, 508.0f, 295.0f, 38.0f));
+    placeKnobs (art (1128.0f, 595.0f, 320.0f, 200.0f),
+                { &glide, &pbRange, &expression, &gain }, false);
+
+    keyboard.setBounds (art (70.0f, 840.0f, 1420.0f, 130.0f));
+    keyboard.setKeyWidth ((float) keyboard.getWidth() / 36.0f);
 }

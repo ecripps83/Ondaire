@@ -89,12 +89,12 @@ namespace ondaire::param
 
         p.push_back (std::make_unique<AudioParameterFloat> (
             ParameterID { tune, 1 }, "Tune",
-            NormalisableRange<float> (-100.0f, 100.0f, 0.1f), 0.0f,
+            NormalisableRange<float> (-100.0f, 100.0f, 1.0f), 0.0f,
             AudioParameterFloatAttributes().withLabel ("ct")));
 
         p.push_back (std::make_unique<AudioParameterFloat> (
             ParameterID { pulseWidth, 1 }, "Tops Width",
-            NormalisableRange<float> (0.05f, 0.45f, 0.001f), 0.12f));
+            NormalisableRange<float> (0.05f, 0.45f, 0.01f), 0.12f));
 
         boolParam (leverA,  "Lever A (No Drive)",       false);
         boolParam (leverB,  "Lever B (Square Wave)",    false);
@@ -115,16 +115,16 @@ namespace ondaire::param
 
         p.push_back (std::make_unique<AudioParameterFloat> (
             ParameterID { percDecay, 1 }, "Percussion Decay",
-            NormalisableRange<float> (0.05f, 3.0f, 0.001f, 0.4f), 0.6f,
+            NormalisableRange<float> (0.05f, 3.0f, 0.05f, 0.4f), 0.6f,
             AudioParameterFloatAttributes().withLabel ("s")));
 
         p.push_back (std::make_unique<AudioParameterFloat> (
             ParameterID { drive, 1 }, "Pentode Drive",
-            NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.35f));
+            NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.35f));
 
         p.push_back (std::make_unique<AudioParameterFloat> (
             ParameterID { noise, 1 }, "Souffle (Breath)",
-            NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.0f));
+            NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0f));
 
         // Modern filter --------------------------------------------------------
         p.push_back (std::make_unique<AudioParameterChoice> (
@@ -133,31 +133,31 @@ namespace ondaire::param
 
         p.push_back (std::make_unique<AudioParameterFloat> (
             ParameterID { cutoff, 1 }, "Filter Cutoff",
-            NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.25f), 4000.0f,
+            NormalisableRange<float> (20.0f, 20000.0f, 10.0f, 0.25f), 4000.0f,
             AudioParameterFloatAttributes().withLabel ("Hz")));
 
         p.push_back (std::make_unique<AudioParameterFloat> (
             ParameterID { resonance, 1 }, "Filter Resonance",
-            NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.15f));
+            NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.15f));
 
         // Envelope ---------------------------------------------------------
         p.push_back (std::make_unique<AudioParameterFloat> (
             ParameterID { attack, 1 }, "Attack",
-            NormalisableRange<float> (0.001f, 3.0f, 0.001f, 0.35f), 0.012f,
+            NormalisableRange<float> (0.001f, 3.0f, 0.01f, 0.35f), 0.012f,
             AudioParameterFloatAttributes().withLabel ("s")));
 
         p.push_back (std::make_unique<AudioParameterFloat> (
             ParameterID { decay, 1 }, "Decay",
-            NormalisableRange<float> (0.001f, 4.0f, 0.001f, 0.35f), 0.15f,
+            NormalisableRange<float> (0.001f, 4.0f, 0.01f, 0.35f), 0.15f,
             AudioParameterFloatAttributes().withLabel ("s")));
 
         p.push_back (std::make_unique<AudioParameterFloat> (
             ParameterID { sustain, 1 }, "Sustain",
-            NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.9f));
+            NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.9f));
 
         p.push_back (std::make_unique<AudioParameterFloat> (
             ParameterID { release, 1 }, "Release",
-            NormalisableRange<float> (0.005f, 6.0f, 0.001f, 0.35f), 0.08f,
+            NormalisableRange<float> (0.005f, 6.0f, 0.01f, 0.35f), 0.08f,
             AudioParameterFloatAttributes().withLabel ("s")));
 
         // Voicing ------------------------------------------------------------
@@ -167,7 +167,7 @@ namespace ondaire::param
 
         p.push_back (std::make_unique<AudioParameterFloat> (
             ParameterID { glide, 1 }, "Glide",
-            NormalisableRange<float> (0.0f, 1.0f, 0.001f, 0.4f), 0.03f,
+            NormalisableRange<float> (0.0f, 1.0f, 0.01f, 0.4f), 0.03f,
             AudioParameterFloatAttributes().withLabel ("s")));
 
         p.push_back (std::make_unique<AudioParameterInt> (
@@ -177,31 +177,31 @@ namespace ondaire::param
         // Modulation --------------------------------------------------------
         p.push_back (std::make_unique<AudioParameterFloat> (
             ParameterID { vibRate, 1 }, "Vibrato Rate",
-            NormalisableRange<float> (3.0f, 10.0f, 0.01f), 5.2f,
+            NormalisableRange<float> (3.0f, 10.0f, 0.1f), 5.2f,
             AudioParameterFloatAttributes().withLabel ("Hz")));
 
         p.push_back (std::make_unique<AudioParameterFloat> (
             ParameterID { vibDepth, 1 }, "Vibrato Depth",
-            NormalisableRange<float> (0.0f, 100.0f, 0.1f), 0.0f,
+            NormalisableRange<float> (0.0f, 100.0f, 1.0f), 0.0f,
             AudioParameterFloatAttributes().withLabel ("ct")));
 
         p.push_back (std::make_unique<AudioParameterFloat> (
             ParameterID { tremRate, 1 }, "Tremolo Rate",
-            NormalisableRange<float> (3.0f, 16.0f, 0.01f), 9.0f,
+            NormalisableRange<float> (3.0f, 16.0f, 0.1f), 9.0f,
             AudioParameterFloatAttributes().withLabel ("Hz")));
 
         p.push_back (std::make_unique<AudioParameterFloat> (
             ParameterID { tremDepth, 1 }, "Tremolo Depth",
-            NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.85f));
+            NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.85f));
 
         // Output ----------------------------------------------------------------
         p.push_back (std::make_unique<AudioParameterFloat> (
             ParameterID { expression, 1 }, "Expression (Knee Lever)",
-            NormalisableRange<float> (0.0f, 1.0f, 0.001f), 1.0f));
+            NormalisableRange<float> (0.0f, 1.0f, 0.01f), 1.0f));
 
         p.push_back (std::make_unique<AudioParameterFloat> (
             ParameterID { gain, 1 }, "Output Gain",
-            NormalisableRange<float> (-36.0f, 6.0f, 0.1f), -6.0f,
+            NormalisableRange<float> (-36.0f, 6.0f, 0.5f), -6.0f,
             AudioParameterFloatAttributes().withLabel ("dB")));
 
         return { p.begin(), p.end() };
